@@ -1,6 +1,6 @@
 __author__ = 'ftruzzi'
 
-# Naive Bayes based on "Linear Bayes Policy for Learning in Contextual-Bandits"
+# Naive2 solution based on "Linear Bayes Policy for Learning in Contextual-Bandits"
 # but not using the pursuit method of calculation
 
 import random
