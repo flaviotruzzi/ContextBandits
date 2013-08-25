@@ -8,8 +8,7 @@ from collections import defaultdict
 from exploChallenge.policies.ContextualBanditPolicy import ContextualBanditPolicy
 
 
-class NaiveBayes(ContextualBanditPolicy):
-
+class NaiveBayes3(ContextualBanditPolicy):
     def __init__(self):
         self.clicks = {}
         self.selections = {}
@@ -21,10 +20,10 @@ class NaiveBayes(ContextualBanditPolicy):
                 self.clicks[article.getID()] = defaultdict(int)
                 self.selections[article.getID()] = defaultdict(int)
 
-        clicks = [self.clicks[article.getID()] for article in possibleActions]
-        selections = [self.selections[article.getID()] for article in possibleActions]
+        sumOfclicks = [sum(self.clicks[article.getID()].values() + [1]) for article in possibleActions]
+        sumOfSelections = [sum(self.selections[article.getID()].values() + [1]) for article in possibleActions]
 
-        action = possibleActions[np.argmax([(1.0 * x) / y for x, y in zip(clicks, selections)])]
+        action = possibleActions[np.argmax([(1.0 * x) / y for x, y in zip(sumOfclicks, sumOfSelections)])]
 
         return action
 
@@ -32,6 +31,5 @@ class NaiveBayes(ContextualBanditPolicy):
         for f, p in enumerate(c.getFeatures()):
             if p is 1:
                 if reward is True:
-                    self.betaS[a.getID()][f] += 1.0
-                else:
-                    self.betaF[a.getID()][f] += 1.0
+                    self.clicks[a.getID()][f] += 1.0
+                self.selections[a.getID()][f] += 1.0
