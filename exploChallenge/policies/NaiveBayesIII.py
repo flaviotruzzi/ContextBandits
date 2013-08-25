@@ -1,7 +1,7 @@
 __author__ = 'ftruzzi'
 
 # Naive Bayes III based on "Linear Bayes Policy for Learning in Contextual-Bandits"
-# but not using the persuit method of calculation
+# but not using the pursuit method of calculation
 
 import numpy as np
 from collections import defaultdict
