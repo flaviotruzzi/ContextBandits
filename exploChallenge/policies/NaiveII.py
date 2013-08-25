@@ -8,7 +8,7 @@ import numpy as np
 from exploChallenge.policies.ContextualBanditPolicy import ContextualBanditPolicy
 
 
-class NaiveBayes2(ContextualBanditPolicy):
+class Naive2(ContextualBanditPolicy):
 
     def __init__(self):
         self.clicks = {}

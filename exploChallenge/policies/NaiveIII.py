@@ -8,7 +8,7 @@ from collections import defaultdict
 from exploChallenge.policies.ContextualBanditPolicy import ContextualBanditPolicy
 
 
-class NaiveBayes3(ContextualBanditPolicy):
+class Naive3(ContextualBanditPolicy):
     def __init__(self):
         self.clicks = {}
         self.selections = {}
