@@ -41,7 +41,7 @@ class Main:
 
         try:
             reader = YahooLogLineReader2(
-                "/Users/ftruzzi/PycharmProjects/bmab/yahoo/data/ydata-fp-td-clicks-v2_0.201110", 2, 16, 136)
+                "/Users/ftruzzi/PycharmProjects/bmab/yahoo/data/ydata-fp-td-clicks-v2_0.201110", 2, 2, 136)
             logStep = 10000
         except:
             reader = YahooLogLineReader2("../yahooTest.txt", 136)

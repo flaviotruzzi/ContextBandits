@@ -4,55 +4,67 @@ __author__ = 'ftruzzi'
 # but not using the pursuit method of calculation
 
 import numpy as np
+import random as rn
 from collections import defaultdict
 from exploChallenge.policies.ContextualBanditPolicy import ContextualBanditPolicy
+
+
+def rargmax(vector):
+    """ Argmax that chooses randomly among eligible maximum indices. """
+    m = np.amax(vector)
+    indices = np.nonzero(vector == m)[0]
+    return rn.choice(indices)
 
 
 class Naive3(ContextualBanditPolicy):
     def __init__(self):
         self.clicksPerFeature = {}
         self.selectionsPerFeature = {}
+        self.used = {}
         self.t = 0
+        self.epsilon = 0.05
+        self.overallFeatureClicks = np.zeros(136)
+        self.overallFeatureSelections = np.zeros(136)
+        self.clicks = {}
+        self.selections = {}
 
     def getActionToPerform(self, visitor, possibleActions):
 
         for article in possibleActions:
             if article.getID() not in self.clicksPerFeature:
-                self.clicksPerFeature[article.getID()] = defaultdict(int)
-                self.selectionsPerFeature[article.getID()] = defaultdict(int)
+                self.clicksPerFeature[article.getID()] = np.zeros(136)
+                self.selectionsPerFeature[article.getID()] = np.zeros(136)
+                self.selections[article.getID()] = 0
+                self.clicks[article.getID()] = 0
+                self.used[article.getID()] = 0
 
-        # indices = []
-        # for article in possibleActions:
-        #     Pai = 0
-        #     for feature in xrange(136):
-        #         clicks = self.clicksPerFeature[article.getID()][feature]
-        #         selections = self.selectionsPerFeature[article.getID()][feature]
-        #         if selections is not 0:
-        #             Pai += 1.0 * clicks / selections
-        #     indices.append(Pai)
+        if np.random.random() > self.epsilon:
 
-        clicks = [np.asarray(self.clicksPerFeature[article.getID()].values())[1:] for article in possibleActions]
-        selections = [np.asarray(self.selectionsPerFeature[article.getID()].values())[1:] for article in
-                      possibleActions]
+            print [sum((self.clicksPerFeature[a.getID()] / (1 + self.selections[a.getID()])) / ((self.overallFeatureClicks / (1 + self.overallFeatureSelections)))) *
+                   (self.clicks[a.getID()] / (1 + self.selections[a.getID()])) for a in possibleActions]
 
-        nFeatures = [sum((k != 0)) for k in selections]
+            #selections = [self.selectionsPerFeature[article.getID()] for article in possibleActions]
+            #nbFeatures = np.count_nonzero(selections) + 1
+            #indices = [1 + sum((1.0 * clicks[x][1:]) / (selections[x][1:] + 1)) / nbFeatures for x in xrange(len(possibleActions))]
+            #action = possibleActions[np.argmax(indices)]
+            #action = possibleActions[rargmax(indices)]
+            #print self.t, indices
+            #print self.used.values()
+            #else:
+            #    action = rn.choice(possibleActions)
 
-        indices = [sum(1.0 * clicks[x] / (selections[x] + 1) / (nFeatures[x] + 1)) for x in
-                   xrange(len(possibleActions))]
-        indices = [1 if x is 0 else x for x in indices]
+            self.t += 1
 
+            #self.used[action.getID()] += 1
 
-
-        # self.t += 1
-        # if self.t == 333:
-        #     print 'k'
-        # print self.t, indices
-
-        action = possibleActions[np.argmax(indices)]
-
-        return action
+        return rn.choice(possibleActions)
 
     def updatePolicy(self, c, a, reward):
+        #if reward is True:
+        #    print '####################################################################################################'
         for f, p in enumerate(c.getFeatures()):
             self.clicksPerFeature[a.getID()][f] += p * int(reward)
             self.selectionsPerFeature[a.getID()][f] += p
+            self.overallFeatureClicks[f] += p * int(reward)
+            self.overallFeatureSelections[f] += p
+
