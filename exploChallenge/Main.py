@@ -23,6 +23,7 @@ from exploChallenge.eval.MyEvaluationPolicy import MyEvaluationPolicy
 from exploChallenge.logs.FromFileLogLineGenerator import FromFileLogLineGenerator
 from exploChallenge.logs.YahooLogLineReader2 import YahooLogLineReader2
 from exploChallenge.policies.NaiveII import Naive2
+from exploChallenge.policies.NaiveIII import Naive3
 
 
 class Main:
@@ -40,14 +41,15 @@ class Main:
 
         try:
             reader = YahooLogLineReader2(
-                "/home/ftruzzi/Downloads/ydata-fp-td-clicks-v2_0.201110", 2, 3, 136)
+                "/Users/ftruzzi/PycharmProjects/bmab/yahoo/data/ydata-fp-td-clicks-v2_0.201110", 2, 16, 136)
             logStep = 10000
         except:
             reader = YahooLogLineReader2("../yahooTest.txt", 136)
             logStep = 1
 
         generator = FromFileLogLineGenerator(reader)
-        self.policy = Naive2()
+        self.policy = Naive3()
+        print self.policy.__class__
 
         evalPolicy = MyEvaluationPolicy(sys.stdout, logStep, 0)
 
