@@ -6,10 +6,22 @@ __author__ = 'ftruzzi'
 import random
 import numpy as np
 from exploChallenge.policies.ContextualBanditPolicy import ContextualBanditPolicy
+import random as pr
+
+
+def rargmax(vector):
+    """ Argmax that chooses randomly among eligible maximum indices. """
+    m = np.amax(vector)
+    indices = np.nonzero(vector == m)[0]
+    return pr.choice(indices)
+
+if __name__ == '__main__':
+    test = [0,1,2,2]
+    for i in range(10):
+        print rargmax(test)
 
 
 class Naive2(ContextualBanditPolicy):
-
     def __init__(self):
         self.clicks = {}
         self.selections = {}
@@ -24,7 +36,13 @@ class Naive2(ContextualBanditPolicy):
         clicks = [self.clicks[article.getID()] for article in possibleActions]
         selections = [self.selections[article.getID()] for article in possibleActions]
 
-        action = possibleActions[np.argmax([(1.0 * x) / y for x, y in zip(clicks, selections)])]
+        #action = possibleActions[np.argmax([(1.0 * x) / y for x, y in zip(clicks, selections)])]
+        #k = [(1.0 * x) / y for x, y in zip(clicks, selections)]
+
+
+        action = possibleActions[np.argmax([np.random.beta(20*self.clicks[article.getID()],
+                                                           20*(self.selections[article.getID()] - self.clicks[
+                                                               article.getID()] + 1)) for article in possibleActions])]
 
         return action
 

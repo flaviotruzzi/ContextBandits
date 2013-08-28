@@ -22,7 +22,7 @@ class Naive3(ContextualBanditPolicy):
         self.selectionsPerFeature = {}
         self.used = {}
         self.t = 0
-        self.epsilon = 0.05
+        self.epsilon = 0.15
         self.overallFeatureClicks = np.zeros(136)
         self.overallFeatureSelections = np.zeros(136)
         self.clicks = {}
@@ -34,30 +34,34 @@ class Naive3(ContextualBanditPolicy):
             if article.getID() not in self.clicksPerFeature:
                 self.clicksPerFeature[article.getID()] = np.zeros(136)
                 self.selectionsPerFeature[article.getID()] = np.zeros(136)
-                self.selections[article.getID()] = 0
-                self.clicks[article.getID()] = 0
+                self.selections[article.getID()] = 1
+                self.clicks[article.getID()] = 1
                 self.used[article.getID()] = 0
+
+
 
         if np.random.random() > self.epsilon:
 
-            print [sum((self.clicksPerFeature[a.getID()] / (1 + self.selections[a.getID()])) / ((self.overallFeatureClicks / (1 + self.overallFeatureSelections)))) *
-                   (self.clicks[a.getID()] / (1 + self.selections[a.getID()])) for a in possibleActions]
+            indices = []
+            for a in possibleActions:
+                index = 0
+                ar = a.getID()
+                for i in xrange(136):
+                    index += (1.0 * self.clicksPerFeature[ar][i] / (1 + self.selectionsPerFeature[ar][i])) * (
+                       1.0 * self.clicks[ar] / (self.selections[ar] + 1)) / (
+                                1.0 + self.overallFeatureClicks[i] / (1 + self.overallFeatureSelections[i]))
+                indices.append(index)
 
-            #selections = [self.selectionsPerFeature[article.getID()] for article in possibleActions]
-            #nbFeatures = np.count_nonzero(selections) + 1
-            #indices = [1 + sum((1.0 * clicks[x][1:]) / (selections[x][1:] + 1)) / nbFeatures for x in xrange(len(possibleActions))]
-            #action = possibleActions[np.argmax(indices)]
-            #action = possibleActions[rargmax(indices)]
-            #print self.t, indices
-            #print self.used.values()
-            #else:
-            #    action = rn.choice(possibleActions)
+            #print indices
+            choice = possibleActions[rargmax(indices)]
+        else:
+            choice = rn.choice(possibleActions)
 
-            self.t += 1
-
-            #self.used[action.getID()] += 1
-
-        return rn.choice(possibleActions)
+        #choice = rn.choice(possibleActions)
+        self.used[choice.getID()] += 1
+        if (self.t % 10000) == 0:
+            print self.used.values()
+        return choice
 
     def updatePolicy(self, c, a, reward):
         #if reward is True:
@@ -67,4 +71,6 @@ class Naive3(ContextualBanditPolicy):
             self.selectionsPerFeature[a.getID()][f] += p
             self.overallFeatureClicks[f] += p * int(reward)
             self.overallFeatureSelections[f] += p
+            self.clicks[a.getID()] += p * int(reward)
+            self.selections[a.getID()] += p
 
