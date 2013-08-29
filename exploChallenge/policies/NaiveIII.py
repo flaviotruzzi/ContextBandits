@@ -20,7 +20,9 @@ class Naive3(ContextualBanditPolicy):
         self.selections = {}
         self.clicksPerFeature = {}
         self.selectionsPerFeature = {}
-
+        self.choice = {}
+        self.used = {}
+        self.t = 0
     def getActionToPerform(self, visitor, possibleActions):
 
         for article in possibleActions:
@@ -29,18 +31,21 @@ class Naive3(ContextualBanditPolicy):
                 self.selections[article.getID()] = 1.0
                 self.clicksPerFeature[article.getID()] = np.ones(136)
                 self.selectionsPerFeature[article.getID()] = np.ones(136)
+                self.used[article.getID()] = 0
 
+        
+        if np.random.random() > 0.1:
+            indices = [self.clicks[a.getID()] / self.selections[a.getID()] * np.prod(
+                self.clicksPerFeature[a.getID()] / self.clicksPerFeature[a.getID()]) for a in possibleActions]
+            choice = possibleActions[np.argmax(indices)]
+        else:
+            choice = rn.choice(possibleActions)
 
-        # TODO: change to vectorized or list-comprehension
-        indices = []
-        for a in possibleActions:
-            index = self.clicks[a.getID()] / self.selections[a.getID()]
-            for f in visitor.getFeatures():
-                index *= self.clicksPerFeature[a.getID()][f] / self.clicksPerFeature[a.getID()][f]
-            indices.append(index)
+        self.t += 1
 
-        choice = possibleActions[np.argmax(indices)]
-
+        self.used[choice.getID()] += 1
+        if (self.t % 10000) == 1:
+            print self.used.values(), len(possibleActions), len(self.used.keys())
         return choice
 
     def updatePolicy(self, c, a, reward):
