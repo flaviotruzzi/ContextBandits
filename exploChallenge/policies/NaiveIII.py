@@ -39,13 +39,8 @@ class Naive3(ContextualBanditPolicy):
                 index *= self.clicksPerFeature[a.getID()][f] / self.clicksPerFeature[a.getID()][f]
             indices.append(index)
 
-        #k = [np.sum(self.pai[a.getID()]) for a in possibleActions]
         choice = possibleActions[np.argmax(indices)]
-        #print k
-        # self.used[choice.getID()] += 1
-        # self.t += 1
-        # if (self.t % 10000) == 0:
-        #     print self.used.values()
+
         return choice
 
     def updatePolicy(self, c, a, reward):
