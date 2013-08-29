@@ -1,8 +1,6 @@
 __author__ = 'ftruzzi'
 
-# Naive3 solution based on "Linear Bayes Policy for Learning in Contextual-Bandits"
-# but not using the pursuit method of calculation
-
+# My naive bayes approach
 import numpy as np
 import random as rn
 from collections import defaultdict
@@ -18,31 +16,31 @@ def rargmax(vector):
 
 class Naive3(ContextualBanditPolicy):
     def __init__(self):
-        self.clicksPerFeature = {}
-        self.selectionsPerFeature = {}
-        self.used = {}
-        self.t = 0
-        self.epsilon = 0.15
-        self.overallFeatureClicks = np.zeros(136)
-        self.overallFeatureSelections = np.zeros(136)
         self.clicks = {}
         self.selections = {}
-        self.pai = {}
+        self.clicksPerFeature = {}
+        self.selectionsPerFeature = {}
 
     def getActionToPerform(self, visitor, possibleActions):
 
         for article in possibleActions:
-            if article.getID() not in self.pai:
-                self.selections[article.getID()] = np.zeros(136)
-                self.pai[article.getID()] = np.ones(136)
-                # self.clicksPerFeature[article.getID()] = np.zeros(136)
-                # self.selectionsPerFeature[article.getID()] = np.zeros(136)
-                # self.selections[article.getID()] = 1
-                # self.clicks[article.getID()] = 1
-                self.used[article.getID()] = 0
+            if article.getID() not in self.clicks:
+                self.clicks[article.getID()] = 1.0 #Optimistic
+                self.selections[article.getID()] = 1.0
+                self.clicksPerFeature[article.getID()] = np.ones(136)
+                self.selectionsPerFeature[article.getID()] = np.ones(136)
 
-        k = [np.sum(self.pai[a.getID()]) for a in possibleActions]
-        choice = possibleActions[np.argmax(k)]
+
+        # TODO: change to vectorized or list-comprehension
+        indices = []
+        for a in possibleActions:
+            index = self.clicks[a.getID()] / self.selections[a.getID()]
+            for f in visitor.getFeatures():
+                index *= self.clicksPerFeature[a.getID()][f] / self.clicksPerFeature[a.getID()][f]
+            indices.append(index)
+
+        #k = [np.sum(self.pai[a.getID()]) for a in possibleActions]
+        choice = possibleActions[np.argmax(indices)]
         #print k
         # self.used[choice.getID()] += 1
         # self.t += 1
@@ -51,9 +49,12 @@ class Naive3(ContextualBanditPolicy):
         return choice
 
     def updatePolicy(self, c, a, reward):
-        features = np.zeros(136)
+        self.clicks[a.getID()] += reward
+        self.selections[a.getID()] += 1.0
         for f, p in enumerate(c.getFeatures()):
-            features[f] = p
-            self.selections[a.getID()][f] += p
+            # Feature is "on" and there is a reward given the article
+            self.clicksPerFeature[a.getID()][f] += p * float(reward)
+            # Feature is present is given the article
+            self.selectionsPerFeature[a.getID()][f] += p
 
-        self.pai[a.getID()] += features * (float(reward) - self.pai[a.getID()]) / (1.0 + self.selections[a.getID()])
+            #self.pai[a.getID()] += features * (float(reward) - self.pai[a.getID()]) / (1.0 + self.selections[a.getID()])
