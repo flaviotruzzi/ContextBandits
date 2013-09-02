@@ -64,7 +64,6 @@ class BMPolicy:
             for f, p in enumerate(c.getFeatures()):
                 if f is not 0:
                     self.featuresPerArticleS[a.getID()][f - 1] += p * 1.0
-
         else:
             self.articlesF[a.getID()] += 1.0
 
