@@ -1,8 +1,5 @@
 __author__ = 'ftruzzi'
 
-# Naive2 solution based on "Linear Bayes Policy for Learning in Contextual-Bandits"
-# but not using the pursuit method of calculation
-
 import random
 import numpy as np
 from exploChallenge.policies.ContextualBanditPolicy import ContextualBanditPolicy
