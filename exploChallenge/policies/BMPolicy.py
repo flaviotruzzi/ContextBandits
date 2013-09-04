@@ -33,6 +33,12 @@ class BMPolicy:
 
     def getActionToPerform(self, visitor, possibleActions):
 
+        """
+
+        @param visitor:
+        @param possibleActions:
+        @return:
+        """
         self.t += 1
 
         for action in possibleActions:
@@ -41,16 +47,24 @@ class BMPolicy:
                 self.articlesF[action.getID()] = 1.0
                 self.featuresPerArticleS[action.getID()] = np.ones(135)  # The first n
                 self.featuresPerArticleF[action.getID()] = np.ones(135)
-                #self.overallFeatureClick[action.getID()] = 1.0
-                #self.overallFeatureSelection[action.getID()] = 1.0
 
-        alphas = [20 * (self.articlesS[a.getID()] + np.sum(1. / 135 * self.featuresPerArticleS[a.getID()])) for a in possibleActions]
-        betas = [20 * (self.articlesF[a.getID()] + np.sum(1. / 135 * self.featuresPerArticleF[a.getID()])) for a in possibleActions]
+        indices = []
+        for article in possibleActions:
+            fIndex = np.random.beta(self.articlesS[article.getID()], self.articlesF[article.getID()])
+            for f, p in enumerate(visitor.getFeatures()):
+                if p is 1 and f is not 0:
+                    fIndex *= np.random.beta(self.featuresPerArticleS[article.getID()][f - 1],
+                                             self.featuresPerArticleF[article.getID()][f - 1])
+            indices.append(fIndex)
 
-        params = np.vstack((alphas, betas)).T
-        if self.t % 10000 is 0:
-            print params, params.T[0, :] / params.T[1, :]
-        indices = [np.random.beta(*param) for param in params]
+
+        #alphas = [20 * (self.articlesS[a.getID()] + np.sum(1. / 135 * self.featuresPerArticleS[a.getID()])) for a in possibleActions]
+        #betas = [20 * (self.articlesF[a.getID()] + np.sum(1. / 135 * self.featuresPerArticleF[a.getID()])) for a in possibleActions]
+
+        #params = np.vstack((alphas, betas)).T
+        #if self.t % 10000 is 0:
+        #    print params, params.T[0, :] / params.T[1, :]
+        #indices = [np.random.beta(*param) for param in params]
 
         choice = np.argmax(indices)
 
