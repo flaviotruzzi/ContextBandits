@@ -27,8 +27,9 @@ class BMPolicy:
         self.articlesF = {}
         self.featuresPerArticleS = {}
         self.featuresPerArticleF = {}
-        self.overallFeatureClick = {}
-        self.overallFeatureSelection = {}
+        self.overallFeatureClick = np.ones(135)
+        self.overallFeatureSelection = np.ones(135)
+        self.lifetime = defaultdict(int)
         self.t = 0
 
     def getActionToPerform(self, visitor, possibleActions):
@@ -42,6 +43,7 @@ class BMPolicy:
         self.t += 1
 
         for action in possibleActions:
+            self.lifetime[action.getID()] += 1
             if action.getID() not in self.articlesS:
                 self.articlesS[action.getID()] = 1.0
                 self.articlesF[action.getID()] = 1.0
@@ -50,21 +52,13 @@ class BMPolicy:
 
         indices = []
         for article in possibleActions:
-            fIndex = np.random.beta(self.articlesS[article.getID()], self.articlesF[article.getID()])
+            fIndex = 0.0
             for f, p in enumerate(visitor.getFeatures()):
                 if p is 1 and f is not 0:
-                    fIndex *= np.random.beta(self.featuresPerArticleS[article.getID()][f - 1],
-                                             self.featuresPerArticleF[article.getID()][f - 1])
+                    fIndex += np.random.beta( self.featuresPerArticleS[article.getID()][f - 1],
+                                              self.featuresPerArticleF[article.getID()][f - 1])
+            fIndex *= np.random.beta( self.articlesS[article.getID()], self.articlesF[article.getID()])
             indices.append(fIndex)
-
-
-        #alphas = [20 * (self.articlesS[a.getID()] + np.sum(1. / 135 * self.featuresPerArticleS[a.getID()])) for a in possibleActions]
-        #betas = [20 * (self.articlesF[a.getID()] + np.sum(1. / 135 * self.featuresPerArticleF[a.getID()])) for a in possibleActions]
-
-        #params = np.vstack((alphas, betas)).T
-        #if self.t % 10000 is 0:
-        #    print params, params.T[0, :] / params.T[1, :]
-        #indices = [np.random.beta(*param) for param in params]
 
         choice = np.argmax(indices)
 
@@ -78,9 +72,11 @@ class BMPolicy:
             for f, p in enumerate(c.getFeatures()):
                 if f is not 0:
                     self.featuresPerArticleS[a.getID()][f - 1] += p * 1.0
+                    self.overallFeatureClick[f - 1] += p * 1.0
         else:
             self.articlesF[a.getID()] += 1.0
 
             for f, p in enumerate(c.getFeatures()):
                 if f is not 0:
                     self.featuresPerArticleF[a.getID()][f - 1] += p * 1.0
+                    self.overallFeatureSelection[f - 1] += p * 1.0
