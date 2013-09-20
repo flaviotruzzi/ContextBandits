@@ -14,10 +14,10 @@ class GMPolicy():
         self.emu = {}  # np.zeros((self.dimension, 1))
         self.f = {}  # np.zeros((self.dimension, 1))
 
-        R = 1
-        delta = .1
+        R = 5
+        delta = .05
         d = 136
-
+        self.asd = np.zeros(35)
         self.v2 = R * R * (np.log(1 / delta) * 24. / d)
 
 
@@ -39,6 +39,9 @@ class GMPolicy():
 
         # play arm that maximize bTtmu
         e = [np.dot(np.squeeze(features), tmu[action.getID()].T) for action in possibleActions]
+        #choice = np.argmax(e)
+        #self.asd[choice] += 1
+        #print self.asd
 
         return possibleActions[np.argmax(e)]
 
